@@ -38,8 +38,8 @@ const PARAGRAPHS = [
 
 type Duration = (typeof DURATIONS)[number];
 
-function getPassage(duration: Duration): string {
-  const paragraphs = [...PARAGRAPHS].sort(() => Math.random() - 0.5);
+function getPassage(duration: Duration, randomize = false): string {
+  const paragraphs = randomize ? [...PARAGRAPHS].sort(() => Math.random() - 0.5) : PARAGRAPHS;
   const targetCharacters = Math.round(duration * 5);
   return paragraphs.flat().join("").slice(0, Math.max(300, targetCharacters));
 }
@@ -175,7 +175,7 @@ export default function TypingTestClient() {
   }
 
   function reloadParagraph() {
-    setPassage(getPassage(duration));
+    setPassage(getPassage(duration, true));
     setTypedText("");
     setStartedAt(null);
     setResult(null);
