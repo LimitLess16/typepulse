@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 
@@ -32,10 +33,39 @@ export default function AuthForm({ mode }: AuthFormProps) {
       }
       router.push("/dashboard");
     } catch (caughtError) {
-      const code = caughtError instanceof Error ? caughtError.message : "";
-      setError(code.replace("Firebase: ", "").replace(/\s*\(auth\/.*\)\.?$/, ""));
+      setError(getAuthErrorMessage(caughtError, mode));
     } finally {
       setLoading(false);
+    }
+
+    function getAuthErrorMessage(error: unknown, mode: AuthFormProps["mode"]): string {
+      if (!(error instanceof FirebaseError)) {
+        return "Something went wrong. Please try again.";
+      }
+
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          return "An account with this email already exists. Try logging in instead.";
+        case "auth/invalid-email":
+          return "Enter a valid email address.";
+        case "auth/weak-password":
+          return "Choose a stronger password with at least 6 characters.";
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+          return "The email or password is incorrect.";
+        case "auth/operation-not-allowed":
+          return "Email/password sign-in is disabled in Firebase. Enable it in Authentication > Sign-in method.";
+        case "auth/invalid-api-key":
+        case "auth/api-key-not-valid":
+          return "Firebase is not configured correctly. Check the values in .env.local and restart the dev server.";
+        case "auth/network-request-failed":
+          return "Network error. Check your internet connection and try again.";
+        default:
+          return mode === "register"
+            ? "We could not create your account. Check your Firebase settings and try again."
+            : "We could not log you in. Check your Firebase settings and try again.";
+      }
     }
   }
 

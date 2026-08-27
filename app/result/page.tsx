@@ -1,8 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 export default function ResultPage() {
+  return (
+    <Suspense fallback={<main className="flex min-h-screen items-center justify-center text-gray-600">Loading results...</main>}>
+      <ResultPageContent />
+    </Suspense>
+  );
+}
+
+function ResultPageContent() {
   const searchParams = useSearchParams();
 
   const wpm = searchParams.get("wpm") || "0";
@@ -21,16 +31,16 @@ export default function ResultPage() {
     <main className="min-h-screen bg-gray-50 text-gray-900">
       <nav className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <a href="/" className="text-xl font-bold">
+          <Link href="/" className="text-xl font-bold">
             Type<span className="text-blue-600">Pulse</span>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/"
             className="text-sm font-medium text-gray-600 hover:text-blue-600"
           >
             Home
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -105,19 +115,19 @@ export default function ResultPage() {
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a
+            <Link
               href="/typing-test"
               className="w-full rounded-xl bg-blue-600 px-6 py-4 text-center font-semibold text-white hover:bg-blue-700"
             >
               Try Again
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/"
               className="w-full rounded-xl border border-gray-300 bg-white px-6 py-4 text-center font-semibold text-gray-700 hover:bg-gray-50"
             >
               Back to Home
-            </a>
+            </Link>
           </div>
         </div>
       </section>
