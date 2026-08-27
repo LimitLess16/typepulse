@@ -62,9 +62,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         case "auth/network-request-failed":
           return "Network error. Check your internet connection and try again.";
         default:
-          return mode === "register"
-            ? "We could not create your account. Check your Firebase settings and try again."
-            : "We could not log you in. Check your Firebase settings and try again.";
+          return `${mode === "register" ? "We could not create your account" : "We could not log you in"} (Firebase: ${error.code}). Check your Firebase settings and try again.`;
       }
     }
   }
