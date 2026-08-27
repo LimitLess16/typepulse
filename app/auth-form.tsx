@@ -74,6 +74,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
       <label className="block text-sm font-medium text-slate-700">
         Email
         <input
+          id="email"
+          name="email"
           required
           type="email"
           autoComplete="email"
@@ -85,6 +87,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
       <label className="block text-sm font-medium text-slate-700">
         Password
         <input
+          id="password"
+          name="password"
           required
           minLength={6}
           type="password"
