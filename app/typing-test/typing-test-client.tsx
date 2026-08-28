@@ -288,8 +288,8 @@ export default function TypingTestClient() {
         </div>
 
         {result ? (
-          <div className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200">
-            <p className="font-semibold uppercase tracking-widest text-indigo-600">Test complete</p>
+          <div className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-8 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+            <p className="font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Test complete</p>
             <h2 className="mt-3 text-3xl font-bold text-slate-900">{result.wpm.toFixed(1)} WPM</h2>
             <p className="mt-2 text-slate-600">{result.accuracy.toFixed(1)}% accuracy with {result.mistakes} mistakes.</p>
             {saveState === "saving" && <p className="mt-4 text-sm text-slate-500">Saving your result...</p>}
@@ -299,8 +299,8 @@ export default function TypingTestClient() {
             <button type="button" onClick={() => resetTest()} className="mt-6 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700">Try again</button>
           </div>
         ) : (
-          <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <div className={theme === "dark" ? "rounded-xl bg-slate-900 p-5 font-mono text-lg leading-8 tracking-wide text-slate-400" : "rounded-xl bg-white p-5 font-mono text-lg leading-8 tracking-wide text-slate-500"} aria-label="Passage to type">
+          <div className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+            <div className="rounded-xl bg-white dark:bg-slate-950 p-5 font-mono text-lg leading-8 tracking-wide text-slate-500 dark:text-slate-400" aria-label="Passage to type">
               {Array.from(passage).map((character, index) => {
                 const typedCharacter = typedText[index];
                 const state = typedCharacter === undefined ? "text-slate-400" : typedCharacter === character ? "text-emerald-600" : "text-red-500 underline";
