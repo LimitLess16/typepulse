@@ -38,10 +38,21 @@ const PARAGRAPHS = [
 
 type Duration = (typeof DURATIONS)[number];
 
-function getPassage(duration: Duration, randomize = false): string {
-  const paragraphs = randomize ? [...PARAGRAPHS].sort(() => Math.random() - 0.5) : PARAGRAPHS;
+function getPassage(duration: Duration, paragraphIndex = 0): string {
   const targetCharacters = Math.round(duration * 5);
-  return paragraphs.flat().join("").slice(0, Math.max(300, targetCharacters));
+  return PARAGRAPHS[paragraphIndex].join("").slice(0, Math.max(300, targetCharacters));
+}
+
+function getRandomPassage(duration: Duration, currentPassage: string): string {
+  let paragraphIndex = Math.floor(Math.random() * PARAGRAPHS.length);
+  let nextPassage = getPassage(duration, paragraphIndex);
+
+  while (nextPassage === currentPassage) {
+    paragraphIndex = (paragraphIndex + 1) % PARAGRAPHS.length;
+    nextPassage = getPassage(duration, paragraphIndex);
+  }
+
+  return nextPassage;
 }
 
 function getInitialDuration(): Duration {
@@ -99,7 +110,7 @@ export default function TypingTestClient() {
       return undefined;
     }
 
-    const timer = window.setInterval(() => setNow(Date.now()), 250);
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [startedAt, result]);
 
@@ -108,6 +119,11 @@ export default function TypingTestClient() {
     : Math.min(duration, Math.max(0, (now - startedAt) / 1000));
   const timeRemaining = Math.max(0, Math.ceil(duration - elapsedSeconds));
   const liveMetrics = useMemo(() => getMetrics(typedText, elapsedSeconds, passage), [typedText, elapsedSeconds, passage]);
+  const passageMarkup = useMemo(() => Array.from(passage).map((character, index) => {
+    const typedCharacter = typedText[index];
+    const state = typedCharacter === undefined ? "text-slate-400" : typedCharacter === character ? "text-emerald-600" : "text-red-500 underline";
+    return <span key={`${character}-${index}`} className={index === typedText.length ? "rounded bg-indigo-100 text-indigo-700" : state}>{character}</span>;
+  }), [passage, typedText]);
 
   useEffect(() => {
     if (startedAt !== null && !result && elapsedSeconds >= duration) {
@@ -175,7 +191,7 @@ export default function TypingTestClient() {
   }
 
   function reloadParagraph() {
-    setPassage(getPassage(duration, true));
+    setPassage(getRandomPassage(duration, passage));
     setTypedText("");
     setStartedAt(null);
     setResult(null);
@@ -222,7 +238,7 @@ export default function TypingTestClient() {
         </div>
         <div className="mt-4 text-center">
           <button type="button" onClick={reloadParagraph} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-white/10">
-            Reload paragraph
+            Refresh (F5)
           </button>
         </div>
 
@@ -247,11 +263,7 @@ export default function TypingTestClient() {
         ) : (
           <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div className={theme === "dark" ? "rounded-xl bg-slate-900 p-5 font-mono text-lg leading-8 tracking-wide text-slate-400" : "rounded-xl bg-white p-5 font-mono text-lg leading-8 tracking-wide text-slate-500"} aria-label="Passage to type">
-              {Array.from(passage).map((character, index) => {
-                const typedCharacter = typedText[index];
-                const state = typedCharacter === undefined ? "text-slate-400" : typedCharacter === character ? "text-emerald-600" : "text-red-500 underline";
-                return <span key={`${character}-${index}`} className={index === typedText.length ? "rounded bg-indigo-100 text-indigo-700" : state}>{character}</span>;
-              })}
+              {passageMarkup}
             </div>
             {startedAt === null && (
               <div className="mt-5 text-center">
