@@ -40,7 +40,7 @@ export type SaveTypingTestInput = {
   timeRemainingSec: number;
   rank: string;
   badges: string[];
-  mistakeAnalysis: Record<string, number>;
+  mistakeAnalysis: string[];
 };
 
 export async function getUserTypingTests(userId: string): Promise<TypingTest[]> {

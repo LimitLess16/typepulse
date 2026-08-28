@@ -34,16 +34,26 @@ function getInitialDuration(): Duration {
   return DURATIONS.includes(requestedDuration as Duration) ? requestedDuration as Duration : 60;
 }
 
-type TestResult = {
+type LiveMetrics = {
   wpm: number;
   accuracy: number;
   mistakes: number;
-  duration: number;
   totalCharacters: number;
   correctCharacters: number;
 };
 
-function getMetrics(text: string, elapsedSeconds: number, passage: string): Omit<TestResult, "duration"> {
+type TestResult = LiveMetrics & {
+  duration: number;
+  averageWpm: number;
+  peakWpm: number;
+  timeUsedSec: number;
+  timeRemainingSec: number;
+  rank: string;
+  badges: string[];
+  mistakeAnalysis: string[];
+};
+
+function getMetrics(text: string, elapsedSeconds: number, passage: string): LiveMetrics {
   let correctCharacters = 0;
   let mistakes = 0;
 
@@ -294,8 +304,49 @@ export default function TypingTestClient() {
         {result ? (
           <div className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-8 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
             <p className="font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Test complete</p>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900">{result.wpm.toFixed(1)} WPM</h2>
-            <p className="mt-2 text-slate-600">{result.accuracy.toFixed(1)}% accuracy with {result.mistakes} mistakes.</p>
+            <h2 className="mt-3 text-4xl font-bold text-slate-900 dark:text-white">{result.wpm.toFixed(1)} WPM</h2>
+            <p className="mt-2 text-slate-600 dark:text-slate-400 font-medium text-lg">{result.accuracy.toFixed(1)}% accuracy with {result.mistakes} mistakes.</p>
+
+            <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
+              <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Rank</p>
+                <p className="font-bold text-slate-900 dark:text-white">{result.rank}</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Peak WPM</p>
+                <p className="font-bold text-slate-900 dark:text-white">{result.peakWpm.toFixed(1)}</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Backspace Count</p>
+                <p className="font-bold text-slate-900 dark:text-white">{backspaceCount}</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Time Used</p>
+                <p className="font-bold text-slate-900 dark:text-white">{result.timeUsedSec}s</p>
+              </div>
+            </div>
+
+            {result.badges.length > 0 && (
+              <div className="mt-6 text-left">
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Badges Earned</p>
+                <div className="flex flex-wrap gap-2">
+                  {result.badges.map(b => (
+                    <span key={b} className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-sm font-medium">🏆 {b}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {result.mistakeAnalysis.length > 0 && (
+              <div className="mt-6 text-left">
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Mistake Analysis</p>
+                <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-slate-300 space-y-1 font-mono">
+                  {result.mistakeAnalysis.map((analysis, i) => (
+                    <li key={i}>{analysis}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {saveState === "saving" && <p className="mt-4 text-sm text-slate-500">Saving your result...</p>}
             {saveState === "saved" && <p className="mt-4 text-sm text-emerald-700">Result saved to your history.</p>}
             {saveState === "error" && <p className="mt-4 text-sm text-amber-700">We couldn&apos;t save this result, but your score is still available.</p>}
@@ -334,7 +385,7 @@ export default function TypingTestClient() {
                 rows={3}
                 spellCheck={false}
                 placeholder={startedAt === null ? "Click Start Test first..." : "Type the passage above..."}
-                className={theme === "dark" ? "w-full resize-none rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 font-mono text-lg text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-900" : "w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 font-mono text-lg text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"}
+                className="w-full resize-none rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 font-mono text-lg text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 transition-colors"
               />
             </label>
             <p className="mt-3 text-center text-sm text-slate-500">
