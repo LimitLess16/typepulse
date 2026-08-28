@@ -8,6 +8,7 @@ import { saveTypingTest } from "@/lib/typing-tests";
 import { paragraphs } from "@/data/paragraphs";
 import { calculateRank, evaluateBadges } from "@/utils/rankBadge";
 import { computeMistakeAnalysis } from "@/utils/mistake";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const DURATIONS = [60, 120, 180] as const;
 type Difficulty = "easy" | "medium" | "hard" | "expert";
@@ -18,8 +19,13 @@ type Duration = (typeof DURATIONS)[number];
 function getPassage(duration: Duration, difficulty: Difficulty = DEFAULT_DIFFICULTY, randomize = false): string {
   const filtered = paragraphs.filter(p => p.difficulty === difficulty);
   const source = randomize ? [...filtered].sort(() => Math.random() - 0.5) : filtered;
-  const targetCharacters = Math.round(duration * 5);
-  return source.map(p => p.text).join(" ").slice(0, Math.max(300, targetCharacters));
+  const targetCharacters = Math.max(300, Math.round(duration * 5));
+  let result = "";
+  for (const p of source) {
+    result += (result ? " " : "") + p.text;
+    if (result.length >= targetCharacters) break;
+  }
+  return result;
 }
 
 function getInitialDuration(): Duration {
@@ -63,7 +69,6 @@ export default function TypingTestClient() {
   const [duration, setDuration] = useState<Duration>(getInitialDuration);
   const [difficulty, setDifficulty] = useState<Difficulty>(DEFAULT_DIFFICULTY);
   const [passage, setPassage] = useState(() => getPassage(getInitialDuration(), DEFAULT_DIFFICULTY));
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [typedText, setTypedText] = useState("");
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -223,13 +228,11 @@ export default function TypingTestClient() {
   }
 
   return (
-    <main className={theme === "dark" ? "min-h-screen bg-slate-950 text-slate-100" : "min-h-screen bg-slate-50 text-slate-900"}>
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Link href="/" className="text-2xl font-bold text-indigo-500">TypePulse</Link>
         <div className="flex items-center gap-3">
-          <button type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-white/10">
-            {theme === "light" ? "Dark mode" : "Light mode"}
-          </button>
+          <ThemeToggle />
           {user ? (
             <Link href="/dashboard" className="rounded-lg px-4 py-2 font-semibold text-slate-700 hover:bg-white">Dashboard</Link>
           ) : (

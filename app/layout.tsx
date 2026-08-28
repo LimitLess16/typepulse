@@ -31,14 +31,18 @@ export const metadata: Metadata = {
   },
 };
 
+import { Providers } from "./providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
