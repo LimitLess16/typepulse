@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getPublicLeaderboard, TypingTest } from "@/lib/typing-tests";
+import { getPublicLeaderboard } from "@/lib/typing-tests";
+import type { TypingTest } from "@/lib/typing-tests";
+import { DashboardNav } from "@/components/DashboardNav";
 
 export default function LeaderboardPage() {
   const [tests, setTests] = useState<TypingTest[]>([]);
@@ -18,7 +20,7 @@ export default function LeaderboardPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <nav className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4"><Link href="/" className="text-xl font-bold text-indigo-600">TypePulse</Link><div className="flex gap-4 text-sm font-semibold text-slate-600"><Link href="/typing-test">Take a test</Link><Link href="/login">Log in</Link></div></div></nav>
+      <DashboardNav links={[{ href: "/typing-test", label: "Take a test" }, { href: "/login", label: "Log in" }]} />
       <section className="mx-auto max-w-4xl px-6 py-12">
         <p className="font-semibold uppercase tracking-widest text-indigo-600">Community scores</p>
         <h1 className="mt-2 text-4xl font-bold text-slate-900">TypePulse leaderboard.</h1>

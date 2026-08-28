@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import type { User } from "firebase/auth";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
-import { getUserTypingTests, TypingTest } from "@/lib/typing-tests";
+import { getUserTypingTests } from "@/lib/typing-tests";
+import type { TypingTest } from "@/lib/typing-tests";
+import { DashboardNav } from "@/components/DashboardNav";
 
 export default function ProgressPage() {
   const router = useRouter();
@@ -40,7 +43,7 @@ export default function ProgressPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <nav className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4"><Link href="/" className="text-xl font-bold text-indigo-600">TypePulse</Link><div className="flex gap-4 text-sm font-semibold text-slate-600"><Link href="/dashboard">Dashboard</Link><Link href="/history">History</Link><Link href="/leaderboard">Leaderboard</Link></div></div></nav>
+      <DashboardNav links={[{ href: "/dashboard", label: "Dashboard" }, { href: "/history", label: "History" }, { href: "/leaderboard", label: "Leaderboard" }]} />
       <section className="mx-auto max-w-6xl px-6 py-12">
         <p className="font-semibold uppercase tracking-widest text-indigo-600">Progress</p>
         <h1 className="mt-2 text-4xl font-bold text-slate-900">See your momentum.</h1>
