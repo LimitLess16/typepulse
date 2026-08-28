@@ -7,12 +7,11 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (document.documentElement.classList.contains("dark")) {
-      setTheme("dark");
-    } else {
-      setTheme("light");
-    }
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+      setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggleTheme() {

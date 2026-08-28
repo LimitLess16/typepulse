@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import type { User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
-import { getUserTypingTests, TypingTest } from "@/lib/typing-tests";
+import { getUserTypingTests } from "@/lib/typing-tests";
+import type { TypingTest } from "@/lib/typing-tests";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold text-slate-900">{value}</p></div>;

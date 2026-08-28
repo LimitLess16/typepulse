@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { useEffect, useMemo, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import type { User } from "firebase/auth";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { saveTypingTest } from "@/lib/typing-tests";
 import { paragraphs } from "@/data/paragraphs";
 import { calculateRank, evaluateBadges } from "@/utils/rankBadge";
+import type { Rank } from "@/utils/rankBadge";
 import { computeMistakeAnalysis } from "@/utils/mistake";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -48,7 +50,7 @@ type TestResult = LiveMetrics & {
   peakWpm: number;
   timeUsedSec: number;
   timeRemainingSec: number;
-  rank: string;
+  rank: Rank;
   badges: string[];
   mistakeAnalysis: string[];
 };
@@ -88,7 +90,7 @@ export default function TypingTestClient() {
   const [backspaceCount, setBackspaceCount] = useState(0);
   const [deleteCount, setDeleteCount] = useState(0);
   const [spacebarCount, setSpacebarCount] = useState(0);
-  const [peakWpm, setPeakWpm] = useState(0);
+  const peakWpmRef = useRef(0);
   const [mistakeMap, setMistakeMap] = useState<Record<string, number>>({});
 
   useEffect(() => onAuthStateChanged(auth, setUser), []);
@@ -110,11 +112,9 @@ export default function TypingTestClient() {
     return getMetrics(typedText, elapsedSeconds, passage);
   }, [typedText, elapsedSeconds, passage]);
 
-  useEffect(() => {
-    if (liveMetrics.wpm > peakWpm) {
-      setPeakWpm(liveMetrics.wpm);
-    }
-  }, [liveMetrics.wpm, peakWpm]);
+  if (liveMetrics.wpm > peakWpmRef.current) {
+    peakWpmRef.current = liveMetrics.wpm;
+  }
 
   useEffect(() => {
     if (startedAt !== null && !result && elapsedSeconds >= duration) {
@@ -130,7 +130,8 @@ export default function TypingTestClient() {
     }
 
     const metrics = getMetrics(text, Math.max(0.1, Math.min(duration, (Date.now() - startedAt) / 1000)), passage);
-    const avgWpm = ((metrics.wpm + (peakWpm || metrics.wpm)) / 2).toFixed(1);
+    const peakWpm = peakWpmRef.current || metrics.wpm;
+    const avgWpm = ((metrics.wpm + peakWpm) / 2).toFixed(1);
     const rank = calculateRank(metrics.wpm);
     const badges = evaluateBadges({
       wpm: metrics.wpm,
@@ -143,14 +144,14 @@ export default function TypingTestClient() {
       ...metrics,
       duration,
       averageWpm: Number(avgWpm),
-      peakWpm: peakWpm,
+      peakWpm,
       timeUsedSec: duration - timeRemaining,
       timeRemainingSec: timeRemaining,
       rank,
       badges,
       mistakeAnalysis,
-    } as any; // cast to satisfy extended fields
-    setResult(testResult as any);
+    };
+    setResult(testResult);
     setSaveState(user ? "saving" : "idle");
 
     if (user) {
@@ -208,7 +209,7 @@ export default function TypingTestClient() {
     setBackspaceCount(0);
     setDeleteCount(0);
     setSpacebarCount(0);
-    setPeakWpm(0);
+    peakWpmRef.current = 0;
     setMistakeMap({});
   }
 
@@ -223,7 +224,7 @@ export default function TypingTestClient() {
     setBackspaceCount(0);
     setDeleteCount(0);
     setSpacebarCount(0);
-    setPeakWpm(0);
+    peakWpmRef.current = 0;
     setMistakeMap({});
   }
 
@@ -237,7 +238,7 @@ export default function TypingTestClient() {
     setBackspaceCount(0);
     setDeleteCount(0);
     setSpacebarCount(0);
-    setPeakWpm(0);
+    peakWpmRef.current = 0;
     setMistakeMap({});
   }
 
