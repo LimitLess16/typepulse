@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
 };
 
-import { Providers } from "./providers";
+
 
 export default function RootLayout({
   children,
@@ -40,8 +40,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
       <body className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );
