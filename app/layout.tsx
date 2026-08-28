@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 export const metadata: Metadata = {
   title: {
@@ -18,6 +19,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "TypePulse" }],
   creator: "TypePulse",
+  manifest: "/manifest.webmanifest",
+  applicationName: "TypePulse",
+  appleWebApp: {
+    capable: true,
+    title: "TypePulse",
+    statusBarStyle: "black-translucent",
+  },
   openGraph: {
     title: "TypePulse - Free Online Typing Test",
     description:
@@ -56,6 +64,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
+        <ServiceWorkerRegistration />
         {children}
       </body>
     </html>
