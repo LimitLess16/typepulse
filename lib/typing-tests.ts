@@ -31,6 +31,16 @@ export type SaveTypingTestInput = {
   mistakes: number;
   totalCharacters: number;
   correctCharacters: number;
+  backspaceCount: number;
+  deleteCount: number;
+  spacebarCount: number;
+  averageWpm: number;
+  peakWpm: number;
+  timeUsedSec: number;
+  timeRemainingSec: number;
+  rank: string;
+  badges: string[];
+  mistakeAnalysis: Record<string, number>;
 };
 
 export async function getUserTypingTests(userId: string): Promise<TypingTest[]> {

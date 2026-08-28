@@ -5,43 +5,21 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useMemo, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { saveTypingTest } from "@/lib/typing-tests";
+import { paragraphs } from "@/data/paragraphs";
+import { calculateRank, evaluateBadges } from "@/utils/rankBadge";
+import { computeMistakeAnalysis } from "@/utils/mistake";
 
 const DURATIONS = [60, 120, 180] as const;
-const PARAGRAPHS = [
-  [
-  "Great typing is built through patience, steady practice, and attention to detail. ",
-  "Instead of rushing through every exercise, focus on making each keystroke accurate and deliberate. ",
-  "As your hands become familiar with common letter patterns, your speed will improve naturally. ",
-  "A calm rhythm also makes it easier to notice mistakes before they become habits. ",
-  "Set aside a few minutes each day to practice sentences, short paragraphs, and unfamiliar words. ",
-  "Try to keep your eyes on the screen, relax your shoulders, and let your fingers return to the home row. ",
-  "With consistent effort, typing becomes less about searching for individual keys and more about expressing ideas clearly. ",
-  "Progress may feel gradual at first, but small improvements add up when you return to practice regularly. ",
-  "Use every test as a chance to learn something about your rhythm, accuracy, and concentration. ",
-  "The goal is not only to type quickly, but to communicate comfortably and confidently whenever you use a keyboard. ",
-  ],
-  [
-    "A clear mind and a comfortable rhythm can make a big difference during a typing session. ",
-    "Keep your wrists relaxed, look at the words on the screen, and allow your fingers to move naturally. ",
-    "Accuracy creates a strong foundation because every correctly typed word builds confidence for the next one. ",
-    "When you practice often, difficult combinations become familiar and your hands begin to remember the right movement. ",
-    "Celebrate small improvements, review your mistakes, and return tomorrow for another focused challenge. ",
-  ],
-  [
-    "Good habits turn short practice sessions into lasting progress. ",
-    "Begin at a pace that feels controlled, then gradually increase your speed while keeping your accuracy high. ",
-    "Reading each sentence carefully helps you anticipate the next word and maintain a smooth flow. ",
-    "There is no need to compare your early scores with anyone else because consistent personal progress is what matters most. ",
-    "With time, the keyboard becomes a quiet tool that lets your ideas move from thought to screen without interruption. ",
-  ],
-];
+type Difficulty = "easy" | "medium" | "hard" | "expert";
+const DEFAULT_DIFFICULTY: Difficulty = "easy";
 
 type Duration = (typeof DURATIONS)[number];
 
-function getPassage(duration: Duration, randomize = false): string {
-  const paragraphs = randomize ? [...PARAGRAPHS].sort(() => Math.random() - 0.5) : PARAGRAPHS;
+function getPassage(duration: Duration, difficulty: Difficulty = DEFAULT_DIFFICULTY, randomize = false): string {
+  const filtered = paragraphs.filter(p => p.difficulty === difficulty);
+  const source = randomize ? [...filtered].sort(() => Math.random() - 0.5) : filtered;
   const targetCharacters = Math.round(duration * 5);
-  return paragraphs.flat().join("").slice(0, Math.max(300, targetCharacters));
+  return source.map(p => p.text).join(" ").slice(0, Math.max(300, targetCharacters));
 }
 
 function getInitialDuration(): Duration {
@@ -83,7 +61,8 @@ function getMetrics(text: string, elapsedSeconds: number, passage: string): Omit
 
 export default function TypingTestClient() {
   const [duration, setDuration] = useState<Duration>(getInitialDuration);
-  const [passage, setPassage] = useState(() => getPassage(getInitialDuration()));
+  const [difficulty, setDifficulty] = useState<Difficulty>(DEFAULT_DIFFICULTY);
+  const [passage, setPassage] = useState(() => getPassage(getInitialDuration(), DEFAULT_DIFFICULTY));
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [typedText, setTypedText] = useState("");
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -91,6 +70,11 @@ export default function TypingTestClient() {
   const [result, setResult] = useState<TestResult | null>(null);
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [backspaceCount, setBackspaceCount] = useState(0);
+  const [deleteCount, setDeleteCount] = useState(0);
+  const [spacebarCount, setSpacebarCount] = useState(0);
+  const [peakWpm, setPeakWpm] = useState(0);
+  const [mistakeMap, setMistakeMap] = useState<Record<string, number>>({});
 
   useEffect(() => onAuthStateChanged(auth, setUser), []);
 
@@ -107,7 +91,11 @@ export default function TypingTestClient() {
     ? 0
     : Math.min(duration, Math.max(0, (now - startedAt) / 1000));
   const timeRemaining = Math.max(0, Math.ceil(duration - elapsedSeconds));
-  const liveMetrics = useMemo(() => getMetrics(typedText, elapsedSeconds, passage), [typedText, elapsedSeconds, passage]);
+  const liveMetrics = useMemo(() => {
+    const metrics = getMetrics(typedText, elapsedSeconds, passage);
+    if (metrics.wpm > peakWpm) setPeakWpm(metrics.wpm);
+    return metrics;
+  }, [typedText, elapsedSeconds, passage, peakWpm]);
 
   useEffect(() => {
     if (startedAt !== null && !result && elapsedSeconds >= duration) {
@@ -122,11 +110,28 @@ export default function TypingTestClient() {
       return;
     }
 
+    const metrics = getMetrics(text, Math.max(0.1, Math.min(duration, (Date.now() - startedAt) / 1000)), passage);
+    const avgWpm = ((metrics.wpm + (peakWpm || metrics.wpm)) / 2).toFixed(1);
+    const rank = calculateRank(metrics.wpm);
+    const badges = evaluateBadges({
+      wpm: metrics.wpm,
+      accuracy: metrics.accuracy,
+      mistakes: metrics.mistakes,
+      totalCharacters: metrics.totalCharacters,
+    });
+    const mistakeAnalysis = computeMistakeAnalysis(mistakeMap);
     const testResult: TestResult = {
-      ...getMetrics(text, Math.max(0.1, Math.min(duration, (Date.now() - startedAt) / 1000)), passage),
+      ...metrics,
       duration,
-    };
-    setResult(testResult);
+      averageWpm: Number(avgWpm),
+      peakWpm: peakWpm,
+      timeUsedSec: duration - timeRemaining,
+      timeRemainingSec: timeRemaining,
+      rank,
+      badges,
+      mistakeAnalysis,
+    } as any; // cast to satisfy extended fields
+    setResult(testResult as any);
     setSaveState(user ? "saving" : "idle");
 
     if (user) {
@@ -138,6 +143,16 @@ export default function TypingTestClient() {
         mistakes: testResult.mistakes,
         totalCharacters: testResult.totalCharacters,
         correctCharacters: testResult.correctCharacters,
+        backspaceCount,
+        deleteCount,
+        spacebarCount,
+        averageWpm: testResult.averageWpm,
+        peakWpm: testResult.peakWpm,
+        timeUsedSec: testResult.timeUsedSec,
+        timeRemainingSec: testResult.timeRemainingSec,
+        rank: testResult.rank,
+        badges: testResult.badges,
+        mistakeAnalysis: testResult.mistakeAnalysis,
       })
         .then(() => setSaveState("saved"))
         .catch(() => setSaveState("error"));
@@ -150,6 +165,15 @@ export default function TypingTestClient() {
     }
     const nextValue = value.slice(0, passage.length);
     setTypedText(nextValue);
+    // update mistake map for characters that differ
+    const newMistakes: Record<string, number> = {};
+    for (let i = 0; i < nextValue.length; i++) {
+      if (nextValue[i] !== passage[i]) {
+        const char = passage[i];
+        newMistakes[char] = (mistakeMap[char] || 0) + 1;
+      }
+    }
+    setMistakeMap(prev => ({ ...prev, ...newMistakes }));
     if (nextValue.length === passage.length) {
       finishTest(nextValue);
     }
@@ -162,25 +186,40 @@ export default function TypingTestClient() {
     setSaveState("idle");
     setStartedAt(start);
     setNow(start);
+    setBackspaceCount(0);
+    setDeleteCount(0);
+    setSpacebarCount(0);
+    setPeakWpm(0);
+    setMistakeMap({});
   }
 
   function resetTest(nextDuration = duration) {
     setDuration(nextDuration);
-    setPassage(getPassage(nextDuration));
+    setPassage(getPassage(nextDuration, difficulty));
     setTypedText("");
     setStartedAt(null);
     setResult(null);
     setSaveState("idle");
     setNow(Date.now());
+    setBackspaceCount(0);
+    setDeleteCount(0);
+    setSpacebarCount(0);
+    setPeakWpm(0);
+    setMistakeMap({});
   }
 
   function reloadParagraph() {
-    setPassage(getPassage(duration, true));
+    setPassage(getPassage(duration, difficulty, true));
     setTypedText("");
     setStartedAt(null);
     setResult(null);
     setSaveState("idle");
     setNow(Date.now());
+    setBackspaceCount(0);
+    setDeleteCount(0);
+    setSpacebarCount(0);
+    setPeakWpm(0);
+    setMistakeMap({});
   }
 
   return (
@@ -220,8 +259,20 @@ export default function TypingTestClient() {
             </button>
           ))}
         </div>
+        <div className="mt-2 flex items-center justify-center gap-2" aria-label="Difficulty selector">
+          {(["easy","medium","hard","expert"] as Difficulty[]).map((level) => (
+            <button
+              key={level}
+              type="button"
+              onClick={() => { setDifficulty(level); resetTest(duration); }}
+              className={`rounded px-3 py-1 text-xs font-medium ${
+                difficulty === level ? "bg-indigo-700 text-white" : "bg-gray-200 text-gray-800"
+              }`}
+            >{level.charAt(0).toUpperCase() + level.slice(1)}</button>
+          ))}
+        </div>
         <div className="mt-4 text-center">
-          <button type="button" onClick={reloadParagraph} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-white/10">
+          <button type="button" onClick={reloadParagraph} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-white/10">
             Reload paragraph
           </button>
         </div>
@@ -265,6 +316,11 @@ export default function TypingTestClient() {
               <textarea
                 value={typedText}
                 onChange={(event) => handleTextChange(event.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Backspace") setBackspaceCount(c => c + 1);
+                  else if (e.key === "Delete") setDeleteCount(c => c + 1);
+                  else if (e.key === " ") setSpacebarCount(c => c + 1);
+                }}
                 onPaste={(event) => event.preventDefault()}
                 disabled={result !== null || startedAt === null}
                 autoFocus={startedAt !== null}
