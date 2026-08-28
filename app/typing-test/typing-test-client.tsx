@@ -97,10 +97,14 @@ export default function TypingTestClient() {
     : Math.min(duration, Math.max(0, (now - startedAt) / 1000));
   const timeRemaining = Math.max(0, Math.ceil(duration - elapsedSeconds));
   const liveMetrics = useMemo(() => {
-    const metrics = getMetrics(typedText, elapsedSeconds, passage);
-    if (metrics.wpm > peakWpm) setPeakWpm(metrics.wpm);
-    return metrics;
-  }, [typedText, elapsedSeconds, passage, peakWpm]);
+    return getMetrics(typedText, elapsedSeconds, passage);
+  }, [typedText, elapsedSeconds, passage]);
+
+  useEffect(() => {
+    if (liveMetrics.wpm > peakWpm) {
+      setPeakWpm(liveMetrics.wpm);
+    }
+  }, [liveMetrics.wpm, peakWpm]);
 
   useEffect(() => {
     if (startedAt !== null && !result && elapsedSeconds >= duration) {
