@@ -7,10 +7,16 @@ export function calculateRank(wpm: number): Rank {
   return "Expert";
 }
 
-export function evaluateBadges(wpm: number, accuracy: number): string[] {
+export function evaluateBadges(metrics: {
+  wpm: number;
+  accuracy: number;
+  mistakes: number;
+  totalCharacters: number;
+}): string[] {
   const badges: string[] = [];
-  if (wpm >= 100) badges.push("Speed Demon");
-  if (accuracy >= 98) badges.push("Sharpshooter");
-  if (wpm >= 80 && accuracy >= 95) badges.push("Pro Typist");
+  if (metrics.wpm >= 100) badges.push("Speed Demon");
+  if (metrics.accuracy >= 98) badges.push("Sharpshooter");
+  if (metrics.wpm >= 80 && metrics.accuracy >= 95) badges.push("Pro Typist");
+  if (metrics.mistakes === 0 && metrics.totalCharacters > 50) badges.push("Flawless");
   return badges;
 }
