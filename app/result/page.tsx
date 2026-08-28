@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function ResultPage() {
   return (
-    <Suspense fallback={<main className="flex min-h-screen items-center justify-center text-gray-600">Loading results...</main>}>
+    <Suspense fallback={<main className="flex min-h-screen items-center justify-center bg-gray-50 text-gray-600 dark:bg-slate-950 dark:text-slate-300">Loading results...</main>}>
       <ResultPageContent />
     </Suspense>
   );
@@ -28,19 +29,22 @@ function ResultPageContent() {
   );
 
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900">
-      <nav className="border-b border-gray-200 bg-white">
+    <main className="min-h-screen bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-slate-100">
+      <nav className="border-b border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <Link href="/" className="text-xl font-bold">
             Type<span className="text-blue-600">Pulse</span>
           </Link>
 
-          <Link
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link
             href="/"
             className="text-sm font-medium text-gray-600 hover:text-blue-600"
-          >
-            Home
-          </Link>
+            >
+              Home
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -52,12 +56,12 @@ function ResultPageContent() {
             Your Typing Results
           </h1>
 
-          <p className="mt-3 text-gray-600">
+          <p className="mt-3 text-gray-600 dark:text-slate-400">
             Here is your performance summary.
           </p>
         </div>
 
-        <div className="mt-10 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
+        <div className="mt-10 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-10">
           <div className="text-center">
             <p className="text-sm font-medium text-gray-500">
               TYPING SPEED
@@ -71,28 +75,28 @@ function ResultPageContent() {
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl bg-gray-50 p-5 text-center">
+            <div className="rounded-2xl bg-gray-50 p-5 text-center dark:bg-slate-800">
               <p className="text-sm text-gray-500">Accuracy</p>
               <p className="mt-2 text-2xl font-bold">{accuracy}%</p>
             </div>
 
-            <div className="rounded-2xl bg-gray-50 p-5 text-center">
+            <div className="rounded-2xl bg-gray-50 p-5 text-center dark:bg-slate-800">
               <p className="text-sm text-gray-500">Errors</p>
               <p className="mt-2 text-2xl font-bold">{errors}</p>
             </div>
 
-            <div className="rounded-2xl bg-gray-50 p-5 text-center">
+            <div className="rounded-2xl bg-gray-50 p-5 text-center dark:bg-slate-800">
               <p className="text-sm text-gray-500">Characters</p>
               <p className="mt-2 text-2xl font-bold">{characters}</p>
             </div>
 
-            <div className="rounded-2xl bg-gray-50 p-5 text-center">
+            <div className="rounded-2xl bg-gray-50 p-5 text-center dark:bg-slate-800">
               <p className="text-sm text-gray-500">Duration</p>
               <p className="mt-2 text-2xl font-bold">{duration}s</p>
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-gray-200 p-5">
+          <div className="mt-8 rounded-2xl border border-gray-200 p-5 dark:border-slate-700">
             <h2 className="text-lg font-bold">
               Character Breakdown
             </h2>
@@ -124,7 +128,7 @@ function ResultPageContent() {
 
             <Link
               href="/"
-              className="w-full rounded-xl border border-gray-300 bg-white px-6 py-4 text-center font-semibold text-gray-700 hover:bg-gray-50"
+              className="w-full rounded-xl border border-gray-300 bg-white px-6 py-4 text-center font-semibold text-gray-700 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               Back to Home
             </Link>
