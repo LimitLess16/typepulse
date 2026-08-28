@@ -9,7 +9,7 @@ export function computeMistakeAnalysis(
     const expected = passage[i];
     const actual = typedText[i];
     if (expected !== actual) {
-      const key = \`'\${expected}' typed as '\${actual}'\`;
+      const key = `'${expected}' typed as '${actual}'`;
       mistypedChars[key] = (mistypedChars[key] || 0) + 1;
     }
   }
@@ -18,7 +18,7 @@ export function computeMistakeAnalysis(
   const sortedMistakes = Object.entries(mistypedChars).sort((a, b) => b[1] - a[1]);
 
   for (const [key, count] of sortedMistakes) {
-    mistakes.push(\`\${key} (\${count} times)\`);
+    mistakes.push(`${key} (${count} times)`);
   }
 
   return mistakes.slice(0, 5); // Return top 5 mistakes
