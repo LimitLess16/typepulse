@@ -10,6 +10,9 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
+const USER_TEST_LIMIT = 100;
+const CACHE_TTL_MS = 30_000;
+
 export type TypingTest = {
   id: string;
   userId?: string;
@@ -33,17 +36,37 @@ export type SaveTypingTestInput = {
   correctCharacters: number;
 };
 
+type CachedTests = {
+  expiresAt: number;
+  promise: Promise<TypingTest[]>;
+};
+
+const userTestsCache = new Map<string, CachedTests>();
+let leaderboardCache: CachedTests | undefined;
+
 export async function getUserTypingTests(userId: string): Promise<TypingTest[]> {
-  const testsQuery = query(
+  const cached = userTestsCache.get(userId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.promise;
+  }
+
+  const promise = getDocs(query(
     collection(db, "typingTests"),
     where("userId", "==", userId),
-  );
-  const snapshot = await getDocs(testsQuery);
-
-  return snapshot.docs.map((document) => ({
+    orderBy("createdAt", "desc"),
+    limit(USER_TEST_LIMIT),
+  )).then((snapshot) => snapshot.docs.map((document) => ({
     id: document.id,
     ...(document.data() as Omit<TypingTest, "id">),
-  })).sort((first, second) => getTypingTestTime(second) - getTypingTestTime(first));
+  })));
+
+  userTestsCache.set(userId, { promise, expiresAt: Date.now() + CACHE_TTL_MS });
+  void promise.catch(() => {
+    if (userTestsCache.get(userId)?.promise === promise) {
+      userTestsCache.delete(userId);
+    }
+  });
+  return promise;
 }
 
 export async function saveTypingTest(test: SaveTypingTestInput): Promise<string> {
@@ -53,22 +76,32 @@ export async function saveTypingTest(test: SaveTypingTestInput): Promise<string>
     createdAt: serverTimestamp(),
   });
 
+  userTestsCache.delete(test.userId);
   return savedTest.id;
 }
 
 export async function getPublicLeaderboard(): Promise<TypingTest[]> {
-  const leaderboardQuery = query(
+  if (leaderboardCache && leaderboardCache.expiresAt > Date.now()) {
+    return leaderboardCache.promise;
+  }
+
+  const promise = getDocs(query(
     collection(db, "typingTests"),
     where("isPublic", "==", true),
     orderBy("wpm", "desc"),
     limit(50),
-  );
-  const snapshot = await getDocs(leaderboardQuery);
-
-  return snapshot.docs.map((document) => ({
+  )).then((snapshot) => snapshot.docs.map((document) => ({
     id: document.id,
     ...(document.data() as Omit<TypingTest, "id">),
-  }));
+  })));
+
+  leaderboardCache = { promise, expiresAt: Date.now() + CACHE_TTL_MS };
+  void promise.catch(() => {
+    if (leaderboardCache?.promise === promise) {
+      leaderboardCache = undefined;
+    }
+  });
+  return promise;
 }
 
 export function getTypingTestTime(test: Pick<TypingTest, "createdAt">): number {

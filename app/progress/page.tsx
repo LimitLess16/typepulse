@@ -35,6 +35,7 @@ export default function ProgressPage() {
   const averageAccuracy = tests.length ? tests.reduce((sum, test) => sum + test.accuracy, 0) / tests.length : 0;
   const wpmChange = tests.length > 1 ? tests[0].wpm - tests[tests.length - 1].wpm : 0;
   const accuracyChange = tests.length > 1 ? tests[0].accuracy - tests[tests.length - 1].accuracy : 0;
+  const bestWpm = tests.length ? Math.max(...tests.map((test) => test.wpm)) : 0;
 
   if (loading || !user) return <main className="flex min-h-screen items-center justify-center text-slate-600">Loading your progress...</main>;
 
@@ -50,8 +51,8 @@ export default function ProgressPage() {
           <div className="mt-10 rounded-2xl bg-white p-8 text-center ring-1 ring-slate-200"><p className="text-slate-600">Take a test to see your progress trends.</p><Link href="/typing-test" className="mt-5 inline-block rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white">Start a test</Link></div>
         ) : (
           <>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><ProgressCard label="Average WPM" value={averageWpm.toFixed(1)} detail={`${formatChange(wpmChange)} vs. earliest test`} /><ProgressCard label="Average accuracy" value={`${averageAccuracy.toFixed(1)}%`} detail={`${formatChange(accuracyChange, "pp")} vs. earliest test`} /><ProgressCard label="Best WPM" value={Math.max(...tests.map((test) => test.wpm)).toFixed(1)} detail="Your top saved score" /><ProgressCard label="Tests completed" value={tests.length.toString()} detail="Keep practicing consistently" /></div>
-            <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><h2 className="text-lg font-bold text-slate-900">Recent trend</h2><div className="mt-6 space-y-4">{recentTests.map((test, index) => <div key={test.id}><div className="flex justify-between text-sm"><span className="text-slate-600">Test {index + 1}</span><span className="font-semibold text-slate-900">{test.wpm.toFixed(1)} WPM · {test.accuracy.toFixed(1)}%</span></div><div className="mt-2 h-3 rounded-full bg-slate-100"><div className="h-3 rounded-full bg-indigo-500" style={{ width: `${Math.min(100, Math.max(4, (test.wpm / Math.max(...tests.map((item) => item.wpm), 1)) * 100))}%` }} /></div></div>)}</div></div>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><ProgressCard label="Average WPM" value={averageWpm.toFixed(1)} detail={`${formatChange(wpmChange)} vs. earliest test`} /><ProgressCard label="Average accuracy" value={`${averageAccuracy.toFixed(1)}%`} detail={`${formatChange(accuracyChange, "pp")} vs. earliest test`} /><ProgressCard label="Best WPM" value={bestWpm.toFixed(1)} detail="Your top saved score" /><ProgressCard label="Tests completed" value={tests.length.toString()} detail="Keep practicing consistently" /></div>
+            <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><h2 className="text-lg font-bold text-slate-900">Recent trend</h2><div className="mt-6 space-y-4">{recentTests.map((test, index) => <div key={test.id}><div className="flex justify-between text-sm"><span className="text-slate-600">Test {index + 1}</span><span className="font-semibold text-slate-900">{test.wpm.toFixed(1)} WPM · {test.accuracy.toFixed(1)}%</span></div><div className="mt-2 h-3 rounded-full bg-slate-100"><div className="h-3 rounded-full bg-indigo-500" style={{ width: `${Math.min(100, Math.max(4, (test.wpm / Math.max(bestWpm, 1)) * 100))}%` }} /></div></div>)}</div></div>
           </>
         )}
       </section>
