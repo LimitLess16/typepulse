@@ -3,6 +3,7 @@ import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://typepulse-umber.vercel.app"),
   title: {
     default: "TypePulse - Free Online Typing Test",
     template: "%s | TypePulse",
@@ -32,6 +33,13 @@ export const metadata: Metadata = {
       "Test your typing speed, accuracy and WPM with TypePulse.",
     type: "website",
     siteName: "TypePulse",
+    url: "/",
+  },
+  twitter: {
+    card: "summary",
+    title: "Free Online Typing Speed Test | TypePulse",
+    description:
+      "Take a free online typing speed test and improve your typing skills with TypePulse.",
   },
   robots: {
     index: true,
