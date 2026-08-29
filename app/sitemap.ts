@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { articles } from "@/data/articles";
 
-const routes = ["", "typing-test", "login", "register"];
+const routes = ["", "typing-test", "blog", "about", "contact", "privacy", "terms", ...articles.map((article) => `blog/${article.slug}`)];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://typepulse.app";

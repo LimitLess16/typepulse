@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export default function Home() {
   return (
@@ -37,6 +38,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+      <SiteFooter />
     </main>
   );
 }
