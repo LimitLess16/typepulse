@@ -2,7 +2,47 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+# TypePulse
+
+A modern online typing test platform built with Next.js and Firebase.
+
+## Features
+
+- Typing Speed Test
+- WPM Calculation
+- Accuracy Tracking
+- User Authentication
+- Performance History
+- Responsive Design
+
+## Tech Stack
+
+- Next.js
+- TypeScript
+- Firebase Authentication
+- Firestore Database
+- Tailwind CSS
+
+## Live Demo
+
+https://typepulse-umber.vercel.app
+
+## Author
+
+Anushiah S
+
+## Installation
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000 in your browser.
+
 First, run the development server:
+
+
 
 ```bash
 npm run dev
