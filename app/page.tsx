@@ -74,6 +74,7 @@ export default function Home() {
           </div>
         </div>
       </nav>
+      <AdUnit />
       <section className="mx-auto max-w-4xl px-6 py-28 text-center">
         <p className="font-semibold uppercase tracking-widest text-indigo-600">Free typing practice</p>
         <h1 className="mt-5 text-5xl font-bold tracking-tight sm:text-6xl">Free online typing speed test for better skills.</h1>
@@ -97,7 +98,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-      <AdUnit />
       <section className="mx-auto max-w-6xl space-y-12 px-6 pb-16">
         <div className="grid gap-8 md:grid-cols-2">
           <div>
