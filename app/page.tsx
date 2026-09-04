@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteFooter } from "@/components/SiteFooter";
+import { AdUnit } from "@/components/AdUnit";
 
 export const metadata: Metadata = {
   title: "Free Online Typing Speed Test | TypePulse",
@@ -96,6 +97,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+      <AdUnit />
       <section className="mx-auto max-w-6xl space-y-12 px-6 pb-16">
         <div className="grid gap-8 md:grid-cols-2">
           <div>
