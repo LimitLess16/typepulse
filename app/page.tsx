@@ -75,9 +75,9 @@ export default function Home() {
         </div>
       </nav>
       <AdUnit />
-      <section className="mx-auto max-w-4xl px-6 py-28 text-center">
+      <section className="mx-auto max-w-4xl px-6 py-16 text-center sm:py-20">
         <p className="font-semibold uppercase tracking-widest text-indigo-600">Free typing practice</p>
-        <h1 className="mt-5 text-5xl font-bold tracking-tight sm:text-6xl">Free online typing speed test for better skills.</h1>
+        <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-6xl">Free online typing speed test for better skills.</h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-400">
           Take an online typing test free, choose a one, two, or three-minute challenge, and see your WPM and accuracy instantly.
         </p>
