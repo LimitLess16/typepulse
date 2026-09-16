@@ -14,7 +14,27 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const { slug } = await params;
   const article = articles.find((item) => item.slug === slug);
   if (!article) return {};
-  return { title: article.title, description: article.description, authors: [{ name: "TypePulse Editorial Team" }] };
+  const canonical = `/blog/${article.slug}`;
+  return {
+    title: article.seoTitle || article.title,
+    description: article.description,
+    keywords: article.keywords,
+    authors: [{ name: "TypePulse Editorial Team" }],
+    alternates: { canonical },
+    openGraph: {
+      type: "article",
+      title: article.seoTitle || article.title,
+      description: article.description,
+      url: canonical,
+      siteName: "TypePulse",
+      publishedTime: article.publishedTime,
+    },
+    twitter: {
+      card: "summary",
+      title: article.seoTitle || article.title,
+      description: article.description,
+    },
+  };
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
@@ -30,8 +50,32 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
   } : null;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://typepulse-umber.vercel.app";
+  const canonicalUrl = `${baseUrl}/blog/${article.slug}`;
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.description,
+    author: { "@type": "Organization", name: "TypePulse Editorial Team" },
+    publisher: { "@type": "Organization", name: "TypePulse" },
+    mainEntityOfPage: canonicalUrl,
+    url: canonicalUrl,
+    ...(article.publishedTime ? { datePublished: article.publishedTime, dateModified: article.publishedTime } : {}),
+  };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+      { "@type": "ListItem", position: 2, name: "Typing Guides", item: `${baseUrl}/blog` },
+      { "@type": "ListItem", position: 3, name: article.title, item: canonicalUrl },
+    ],
+  };
   return (
     <InfoPage eyebrow={`Typing guide · ${article.readTime}`} title={article.title}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <p className="text-lg">{article.description}</p>
       {article.sections.map((section) => (
