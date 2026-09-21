@@ -5,8 +5,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { articles } from "@/data/articles";
 
 export const metadata: Metadata = {
-  title: "Typing Guides and Practice Tips",
-  description: "Read practical TypePulse guides about typing speed, accuracy, touch typing, and better practice habits.",
+  title: "Typing Speed Guides: WPM, Average Speed, and Practice Tips",
+  description: "Learn what is a good WPM, understand average typing speed, and discover practical ways to increase typing speed and accuracy.",
 };
 
 export default function BlogPage() {
@@ -20,8 +20,8 @@ export default function BlogPage() {
       </nav>
       <section className="mx-auto max-w-6xl px-6 py-16">
         <p className="font-semibold uppercase tracking-widest text-indigo-600">TypePulse guides</p>
-        <h1 className="mt-3 text-4xl font-bold text-slate-900 dark:text-white">Learn, practice, and type with confidence.</h1>
-        <p className="mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">Helpful, practical articles for improving typing speed, accuracy, comfort, and consistency.</p>
+        <h1 className="mt-3 text-4xl font-bold text-slate-900 dark:text-white">Typing speed, WPM, and practice guides.</h1>
+        <p className="mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">Find out what is a good typing speed, compare average WPM, and learn how to increase typing speed with accurate, comfortable practice.</p>
         <div className="mt-10 grid gap-5 md:grid-cols-2">
           {articles.map((article) => (
             <Link key={article.slug} href={`/blog/${article.slug}`} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:ring-indigo-300 dark:bg-slate-900 dark:ring-slate-800">

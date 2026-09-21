@@ -50,7 +50,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
   } : null;
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://typepulse-umber.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://typepulse.app";
   const canonicalUrl = `${baseUrl}/blog/${article.slug}`;
   const articleSchema = {
     "@context": "https://schema.org",
